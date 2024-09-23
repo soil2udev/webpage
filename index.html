@@ -4,34 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Soil2U</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@300;400&display=swap" rel="stylesheet">
     <style>
+        /* Global Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f5f5;
             color: #333;
-            text-align: center;
-            margin-top: 50px;
+            line-height: 1.6;
         }
-        h1 {
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        a {
+            color: #e74c3c;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Header */
+        header {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header img {
+            height: 60px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            background-image: url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c');
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero h2 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .hero p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Slogan Section */
+        .slogan {
+            background-color: #fdfdfd;
+            padding: 40px;
+            text-align: center;
+        }
+        .slogan h3 {
+            font-size: 1.8rem;
             color: #e74c3c;
         }
-        p {
-            font-size: 1.2em;
+
+        /* Farmer Photos Section */
+        .farmers {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 40px 20px;
         }
-        .footer {
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #888;
+        .farmer-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 20px;
+            text-align: center;
+            width: 250px;
+        }
+        .farmer-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .farmer-card h4 {
+            margin: 10px 0;
+            font-size: 1.2rem;
+        }
+        .farmer-card p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        footer p {
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to Soil2U</h1>
-    <p>Delivering the best farm products directly from the soil to you!</p>
-    <p>Our products are grown with care and passion to ensure the finest quality.</p>
 
-    <div class="footer">
-        &copy; 2024 Soil2U. All rights reserved.
-    </div>
+    <!-- Header -->
+    <header>
+        <img src="logo.png" alt="Soil2U Logo">
+        <h1>Soil2U</h1>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h2>Bringing Farm Freshness to Your Doorstep</h2>
+        <p>Experience the finest farm products, directly from the soil to you.</p>
+    </section>
+
+    <!-- Slogan Section -->
+    <section class="slogan">
+        <h3>"From Soil to You, Fresh and True"</h3>
+    </section>
+
+    <!-- Farmer Photos Section -->
+    <section class="farmers">
+        <div class="farmer-card">
+            <img src="https://via.placeholder.com/250x150" alt="Farmer 1">
+            <h4>Farmer Ramesh</h4>
+            <p>Bringing organic crops to your kitchen, grown with love and dedication.</p>
+        </div>
+        <div class="farmer-card">
+            <img src="https://via.placeholder.com/250x150" alt="Farmer 2">
+            <h4>Farmer Sita</h4>
+            <p>Our crops are nurtured from the soil to provide you with fresh produce.</p>
+        </div>
+        <div class="farmer-card">
+            <img src="https://via.placeholder.com/250x150" alt="Farmer 3">
+            <h4>Farmer Mahesh</h4>
+            <p>Delivering the highest quality products directly from our fields to you.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Soil2U. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>
