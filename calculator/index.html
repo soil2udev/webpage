@@ -161,17 +161,22 @@
 
     // Fetch party data
     async function fetchPartyData() {
-      const response = await fetch(sheetURL);
-      const csvData = await response.text();
-      const rows = csvData.split("\n").map(row => row.split(","));
-      partyData = rows.slice(1).map(([village, partyName, address, mobile]) => ({
-        village: village.trim(),
-        partyName: partyName.trim(),
-        address: address.trim(),
-        mobile: mobile.trim(),
-      }));
+      try {
+        const response = await fetch(sheetURL);
+        if (!response.ok) throw new Error("Failed to fetch data.");
+        const csvData = await response.text();
+        const rows = csvData.split("\n").map(row => row.split(","));
+        partyData = rows.slice(1).map(([village, partyName, address, mobile]) => ({
+          village: village.trim(),
+          partyName: partyName.trim(),
+          address: address.trim(),
+          mobile: mobile.trim(),
+        }));
 
-      updateVillageList();
+        updateVillageList();
+      } catch (error) {
+        alert("Error fetching data: " + error.message);
+      }
     }
 
     function updateVillageList() {
@@ -182,7 +187,11 @@
     villageInput.addEventListener("input", () => {
       const selectedVillage = villageInput.value.trim();
       const parties = partyData.filter(p => p.village === selectedVillage).map(p => p.partyName);
-      partyList.innerHTML = parties.map(p => `<option value="${p}">`).join("");
+      if (parties.length > 0) {
+        partyList.innerHTML = parties.map(p => `<option value="${p}">`).join("");
+      } else {
+        partyList.innerHTML = ""; // Clear the list if no parties match
+      }
     });
 
     partyInput.addEventListener("input", () => {
@@ -198,6 +207,11 @@
         addressInput.value = "";
         mobileInput.value = "";
       }
+
+      // Reset products if party details change
+      products = [];
+      totalAmount = 0;
+      updateProductTable();
     });
 
     // Add product
@@ -303,10 +317,18 @@
     document.getElementById("generate-bill").addEventListener("click", () => {
       const { jsPDF } = window.jspdf;
 
+      if (products.length === 0) {
+        alert("No products added. Please add at least one product before generating the bill.");
+        return;
+      }
+
       const doc = new jsPDF();
       const currentTime = new Date();
       const formattedDate = `${currentTime.toLocaleDateString()} ${currentTime.toLocaleTimeString()}`;
       const partyName = document.getElementById("party-name").value.trim() || "new_party";
+
+      const isNewParty = !partyData.some(p => p.partyName === partyName);
+      const prefix = isNewParty ? "new_" : "";
 
       doc.setFontSize(14);
       doc.text("Invoice", 20, 10);
@@ -328,7 +350,7 @@
 
       doc.text(`Total Amount: Rs ${totalAmount.toFixed(2)}`, 20, doc.lastAutoTable.finalY + 10);
       const timestamp = `${currentTime.getHours()}_${currentTime.getMinutes()}_${currentTime.getDate()}_${currentTime.getMonth() + 1}_${currentTime.getFullYear()}`;
-      doc.save(`${partyName.replace(/\s+/g, "")}_${timestamp}.pdf`);
+      doc.save(`${prefix}${partyName.replace(/\s+/g, "")}_${timestamp}.pdf`);
     });
 
     fetchPartyData();
