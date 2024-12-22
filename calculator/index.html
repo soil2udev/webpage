@@ -19,8 +19,9 @@
     label {
       font-weight: bold;
       margin-top: 10px;
+      display: block;
     }
-    input, select, button {
+    input, select, textarea, button {
       margin-top: 5px;
       width: 100%;
       padding: 10px;
@@ -55,18 +56,6 @@
       font-weight: bold;
       margin-top: 20px;
     }
-    @media (max-width: 600px) {
-      body {
-        margin: 10px;
-      }
-      table, th, td {
-        font-size: 14px;
-      }
-      .btn {
-        font-size: 14px;
-        padding: 8px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -88,6 +77,9 @@
 
       <label for="address">Address</label>
       <input type="text" id="address" placeholder="Enter address">
+
+      <label for="additional-notes">Additional Notes</label>
+      <textarea id="additional-notes" placeholder="Enter any additional notes"></textarea>
     </form>
 
     <!-- Add Products -->
@@ -104,6 +96,7 @@
         <option value="50g">50g</option>
         <option value="100g">100g</option>
         <option value="250g">250g</option>
+        <option value="Loose">Loose</option>
       </select>
 
       <label for="quantity">Quantity (in kg)</label>
@@ -136,30 +129,29 @@
   <script>
     const sheetURL = "https://docs.google.com/spreadsheets/d/1RKR8GkuxrcjzN1Vs5ijFV0W7JYmBt8aHIIv8mqrxtGE/export?format=csv";
 
-    const villageList = document.getElementById("village-list");
-    const partyList = document.getElementById("party-list");
-    const villageInput = document.getElementById("village");
-    const partyInput = document.getElementById("party-name");
-    const mobileInput = document.getElementById("mobile");
-    const addressInput = document.getElementById("address");
-    const productTable = document.getElementById("product-table").querySelector("tbody");
-    const totalAmountDisplay = document.getElementById("total-amount");
-
-    let partyData = [];
-    let products = [];
-    let totalAmount = 0;
-
     const prices = {
       "Mirchi Powder": {
         "50g": [290, 288, 286, 284, 282, 280],
         "100g": [275, 273, 271, 269, 267, 265],
         "250g": [270, 268, 266, 264, 262, 260],
+        "Loose": [235, 232, 229, 226, 223, 220],
       },
       "Haldi Powder": { "50g": 280, "100g": 270, "250g": 252 },
       "Dhaniya Powder": { "50g": 220, "100g": 185, "250g": 160 },
     };
 
-    // Fetch party data
+    let partyData = [];
+    let products = [];
+    let totalAmount = 0;
+
+    const villageInput = document.getElementById("village");
+    const partyInput = document.getElementById("party-name");
+    const mobileInput = document.getElementById("mobile");
+    const addressInput = document.getElementById("address");
+    const partyList = document.getElementById("party-list");
+    const productTable = document.getElementById("product-table").querySelector("tbody");
+    const totalAmountDisplay = document.getElementById("total-amount");
+
     async function fetchPartyData() {
       try {
         const response = await fetch(sheetURL);
@@ -172,74 +164,79 @@
           address: address.trim(),
           mobile: mobile.trim(),
         }));
-
-        updateVillageList();
+        updateVillageSuggestions();
       } catch (error) {
-        alert("Error fetching data: " + error.message);
+        alert("Error fetching party data: " + error.message);
       }
     }
 
-    function updateVillageList() {
+    function updateVillageSuggestions() {
       const villages = [...new Set(partyData.map(p => p.village))];
-      villageList.innerHTML = villages.map(v => `<option value="${v}">`).join("");
+      document.getElementById("village-list").innerHTML = villages.map(v => `<option value="${v}">`).join("");
     }
 
     villageInput.addEventListener("input", () => {
       const selectedVillage = villageInput.value.trim();
       const parties = partyData.filter(p => p.village === selectedVillage).map(p => p.partyName);
-      if (parties.length > 0) {
-        partyList.innerHTML = parties.map(p => `<option value="${p}">`).join("");
-      } else {
-        partyList.innerHTML = ""; // Clear the list if no parties match
-      }
+      partyList.innerHTML = parties.map(p => `<option value="${p}">`).join("");
     });
 
     partyInput.addEventListener("input", () => {
       const selectedVillage = villageInput.value.trim();
-      const selectedPartyName = partyInput.value.trim();
-      const selectedParty = partyData.find(
-        p => p.village === selectedVillage && p.partyName === selectedPartyName
-      );
-      if (selectedParty) {
-        addressInput.value = selectedParty.address;
-        mobileInput.value = selectedParty.mobile;
+      const selectedParty = partyInput.value.trim();
+      const party = partyData.find(p => p.village === selectedVillage && p.partyName === selectedParty);
+
+      if (party) {
+        addressInput.value = party.address;
+        mobileInput.value = party.mobile;
       } else {
         addressInput.value = "";
         mobileInput.value = "";
       }
-
-      // Reset products if party details change
-      products = [];
-      totalAmount = 0;
-      updateProductTable();
     });
 
-    // Add product
+    document.getElementById("product-category").addEventListener("change", () => {
+      const category = document.getElementById("product-category").value;
+      const productSize = document.getElementById("product-size");
+      if (category === "Mirchi Powder") {
+        productSize.innerHTML = `
+          <option value="50g">50g</option>
+          <option value="100g">100g</option>
+          <option value="250g">250g</option>
+          <option value="Loose">Loose</option>
+        `;
+      } else {
+        productSize.innerHTML = `
+          <option value="50g">50g</option>
+          <option value="100g">100g</option>
+          <option value="250g">250g</option>
+        `;
+      }
+    });
+
     document.getElementById("add-product").addEventListener("click", () => {
       const category = document.getElementById("product-category").value;
       const size = document.getElementById("product-size").value;
-      const quantity = parseFloat(document.getElementById("quantity").value || 0);
+      const quantity = parseFloat(document.getElementById("quantity").value);
 
-      if (quantity <= 0) {
+      if (!quantity || quantity <= 0) {
         alert("Please enter a valid quantity.");
         return;
       }
 
-      let perKgRate;
-      let perPouchRate;
-      let totalPrice;
-
+      let perKgRate = 0;
       if (category === "Mirchi Powder") {
-        const totalMirchiQuantity = calculateTotalMirchiQuantity(quantity);
-        const tier = determineRateTier(totalMirchiQuantity);
-        perKgRate = prices[category][size][tier];
+        const totalChilliQuantity = products
+          .filter(product => product.category === "Mirchi Powder")
+          .reduce((sum, product) => sum + product.quantity, 0) + quantity;
+        const tier = determineChilliTier(totalChilliQuantity);
+        perKgRate = prices["Mirchi Powder"][size][tier];
       } else {
         perKgRate = prices[category][size];
       }
 
-      const pouchSizeInKg = parseFloat(size.replace("g", "")) / 1000;
-      perPouchRate = (perKgRate * pouchSizeInKg).toFixed(2);
-      totalPrice = (perKgRate * quantity).toFixed(2);
+      const perPouchRate = (perKgRate * (size === "Loose" ? 1 : parseInt(size) / 1000)).toFixed(2);
+      const totalPrice = (perKgRate * quantity).toFixed(2);
 
       products.push({
         category,
@@ -250,17 +247,11 @@
         totalPrice,
       });
 
-      recalculateAllProducts();
+      recalculateChilliPrices();
       updateProductTable();
     });
 
-    function calculateTotalMirchiQuantity(newQuantity) {
-      return products
-        .filter(p => p.category === "Mirchi Powder")
-        .reduce((sum, p) => sum + p.quantity, 0) + newQuantity;
-    }
-
-    function determineRateTier(totalQuantity) {
+    function determineChilliTier(totalQuantity) {
       if (totalQuantity <= 3) return 0;
       if (totalQuantity <= 5) return 1;
       if (totalQuantity <= 10) return 2;
@@ -269,31 +260,30 @@
       return 5;
     }
 
-    function recalculateAllProducts() {
-      totalAmount = 0; // Reset totalAmount
-      const totalMirchiQuantity = calculateTotalMirchiQuantity(0); // Total Mirchi Quantity
-      const tier = determineRateTier(totalMirchiQuantity);
+    function recalculateChilliPrices() {
+      const totalChilliQuantity = products
+        .filter(product => product.category === "Mirchi Powder")
+        .reduce((sum, product) => sum + product.quantity, 0);
 
-      products = products.map(p => {
-        if (p.category === "Mirchi Powder") {
-          const perKgRate = prices["Mirchi Powder"][p.size][tier];
-          const pouchSizeInKg = parseFloat(p.size.replace("g", "")) / 1000;
-          const perPouchRate = (perKgRate * pouchSizeInKg).toFixed(2);
-          const totalPrice = (perKgRate * p.quantity).toFixed(2);
+      const tier = determineChilliTier(totalChilliQuantity);
 
-          totalAmount += parseFloat(totalPrice); // Update total amount
-          return { ...p, perKgRate: perKgRate.toFixed(2), perPouchRate, totalPrice };
+      products = products.map(product => {
+        if (product.category === "Mirchi Powder") {
+          const perKgRate = prices["Mirchi Powder"][product.size][tier];
+          const perPouchRate = (perKgRate * (product.size === "Loose" ? 1 : parseInt(product.size) / 1000)).toFixed(2);
+          const totalPrice = (perKgRate * product.quantity).toFixed(2);
+          return { ...product, perKgRate: perKgRate.toFixed(2), perPouchRate, totalPrice };
         }
-
-        totalAmount += parseFloat(p.totalPrice); // Add non-Mirchi products
-        return p;
+        return product;
       });
     }
 
     function updateProductTable() {
-      const productTable = document.getElementById("product-table").querySelector("tbody");
       productTable.innerHTML = "";
+      totalAmount = 0;
+
       products.forEach((product, index) => {
+        totalAmount += parseFloat(product.totalPrice);
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${product.category}</td>
@@ -305,34 +295,45 @@
         `;
         productTable.appendChild(row);
       });
+
       totalAmountDisplay.textContent = `Total Amount: Rs ${totalAmount.toFixed(2)}`;
     }
 
     function removeProduct(index) {
       products.splice(index, 1);
-      recalculateAllProducts();
+      recalculateChilliPrices();
       updateProductTable();
     }
 
     document.getElementById("generate-bill").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
+      const jsPDF = window.jspdf.jsPDF;
+      const doc = new jsPDF();
 
-      if (products.length === 0) {
-        alert("No products added. Please add at least one product before generating the bill.");
+      const partyName = document.getElementById("party-name").value.trim();
+      const village = document.getElementById("village").value.trim();
+      const mobile = document.getElementById("mobile").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const additionalNotes = document.getElementById("additional-notes").value.trim();
+
+      if (!partyName || !village || !mobile || !address) {
+        alert("Please fill in all customer details before generating the bill.");
         return;
       }
 
-      const doc = new jsPDF();
-      const currentTime = new Date();
-      const formattedDate = `${currentTime.toLocaleDateString()} ${currentTime.toLocaleTimeString()}`;
-      const partyName = document.getElementById("party-name").value.trim() || "new_party";
-
       const isNewParty = !partyData.some(p => p.partyName === partyName);
-      const prefix = isNewParty ? "new_" : "";
+      const timestamp = new Date()
+        .toLocaleString("en-GB")
+        .replace(/[/, :]/g, "_")
+        .replace(",", "");
+      const pdfName = `${isNewParty ? "new_" : ""}${partyName.replace(/\s+/g, "_")}_${timestamp}.pdf`;
 
       doc.setFontSize(14);
-      doc.text("Invoice", 20, 10);
-      doc.text(`Date: ${formattedDate}`, 20, 20);
+      doc.text("Invoice", 10, 10);
+      doc.text(`Party Name: ${partyName}`, 10, 20);
+      doc.text(`Village: ${village}`, 10, 30);
+      doc.text(`Mobile: ${mobile}`, 10, 40);
+      doc.text(`Address: ${address}`, 10, 50);
+      doc.text(`Additional Notes: ${additionalNotes}`, 10, 60);
 
       const rows = products.map(p => [
         p.category,
@@ -343,14 +344,13 @@
       ]);
 
       doc.autoTable({
-        head: [["Category", "Size", "Quantity (kg)", "Rates", "Total Price"]],
+        head: [["Category", "Size", "Quantity", "Rate", "Total"]],
         body: rows,
-        startY: 30,
+        startY: 70,
       });
 
-      doc.text(`Total Amount: Rs ${totalAmount.toFixed(2)}`, 20, doc.lastAutoTable.finalY + 10);
-      const timestamp = `${currentTime.getHours()}_${currentTime.getMinutes()}_${currentTime.getDate()}_${currentTime.getMonth() + 1}_${currentTime.getFullYear()}`;
-      doc.save(`${prefix}${partyName.replace(/\s+/g, "")}_${timestamp}.pdf`);
+      doc.text(`Total Amount: Rs ${totalAmount.toFixed(2)}`, 10, doc.lastAutoTable.finalY + 10);
+      doc.save(pdfName);
     });
 
     fetchPartyData();
