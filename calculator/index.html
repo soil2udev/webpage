@@ -354,6 +354,37 @@
     });
 
     fetchPartyData();
+    villageInput.addEventListener("input", () => {
+  const selectedVillage = villageInput.value.trim();
+  const parties = partyData.filter(p => p.village === selectedVillage).map(p => p.partyName);
+  partyList.innerHTML = parties.map(p => `<option value="${p}">`).join("");
+
+  // Reset added products when village changes
+  resetAddedProducts();
+});
+
+partyInput.addEventListener("input", () => {
+  const selectedVillage = villageInput.value.trim();
+  const selectedParty = partyInput.value.trim();
+  const party = partyData.find(p => p.village === selectedVillage && p.partyName === selectedParty);
+
+  if (party) {
+    addressInput.value = party.address;
+    mobileInput.value = party.mobile;
+  } else {
+    addressInput.value = "";
+    mobileInput.value = "";
+  }
+
+  // Reset added products when party name changes
+  resetAddedProducts();
+});
+
+function resetAddedProducts() {
+  products = [];
+  updateProductTable();
+}
+
   </script>
 </body>
 </html>
